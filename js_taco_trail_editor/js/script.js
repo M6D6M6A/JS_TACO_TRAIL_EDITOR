@@ -1,105 +1,18 @@
 (function(window, document) {})(window, document);
 
 const inputElement = document.getElementById("file-input");
+const dynTable = document.getElementById("table");
+
 inputElement.addEventListener("change", display_trail, false);
 
-function unpack_trail(trail_file) {
-
-    trail_json_data = {
-        "version": null,
-        "map_id": null,
-        "positions": []
-    }
-
-    var reader = new FileReader();
-    reader.onload = function() {
-        var offset = 0;
-        var arrayBuffer = this.result,
-            array = new Uint8Array(arrayBuffer);
-
-        // Unpack Version
-        var version = new Uint32Array(array.slice(offset, offset + 4))[0];
-        trail_json_data.version = version
-        offset += 4;
-
-        // Unpack Map ID
-        var mapId = new Uint32Array(array.slice(offset, offset + 4))[0];
-        trail_json_data.map_id = mapId
-        offset += 4;
-
-        // Loop to unpack postionBuffer
-        var postionBuffer = arrayBuffer.slice(offset, arrayBuffer.length);
-        var index = 0
-        for (i = 0; i < postionBuffer.byteLength; i += 12) {
-            position_json_data = {
-                "index": index++,
-                "x": null,
-                "y": null,
-                "z": null
-            };
-
-            // if (i === 0) {
-            //     console.log(postionBuffer.slice(i, i + 4))
-            // }
-
-            var f32 = new Float32Array(postionBuffer.slice(i, i + 4));
-            var f32value = f32[0];
-            position_json_data.x = f32value;
-
-            var f32 = new Float32Array(postionBuffer.slice(i + 4, i + 8));
-            var f32value = f32[0];
-            position_json_data.y = f32value;
-
-            var f32 = new Float32Array(postionBuffer.slice(i + 8, i + 12));
-            var f32value = f32[0];
-            position_json_data.z = f32value;
-
-            trail_json_data.positions.push(position_json_data);
-
-            addItems(trail_json_data);
-        }
-
-    }
-    reader.readAsArrayBuffer(trail_file);
-}
-
 function display_trail() {
-
     var trail_file = this.files[0];
     unpack_trail(trail_file);
 }
 
-function saveAs(blob, fileName) {
-    var url = window.URL.createObjectURL(blob);
-
-    var anchorElem = document.createElement("a");
-    anchorElem.style = "display: none";
-    anchorElem.href = url;
-    anchorElem.download = fileName;
-
-    document.body.appendChild(anchorElem);
-    anchorElem.click();
-
-    document.body.removeChild(anchorElem);
-
-    // On Edge, revokeObjectURL should be called only after
-    // a.click() has completed, atleast on EdgeHTML 15.15048
-    setTimeout(function() {
-        window.URL.revokeObjectURL(url);
-    }, 1000);
-}
-
-function addItems(positions_json) {
+function unpack_trail(trail_file) {
 
     deleteItems();
-
-    var mapId = document.getElementById("mapId")
-    mapId.setAttribute("value", positions_json.map_id);
-
-    var version = document.getElementById("version")
-    version.innerHTML = positions_json.version;
-
-    var ul = document.getElementById("table");
 
     var tableHeaderRow = document.createElement("tr");
     var tableHeader5 = document.createElement("th");
@@ -122,12 +35,63 @@ function addItems(positions_json) {
     tableHeaderRow.appendChild(tableHeader4);
     tableHeaderRow.appendChild(tableHeader6);
 
-    ul.appendChild(tableHeaderRow);
+    dynTable.appendChild(tableHeaderRow);
 
-    for (var index in positions_json.positions) {
-        var li = itemToHtml(positions_json.positions[index]);
-        ul.appendChild(li);
+    var reader = new FileReader();
+    reader.onload = function() {
+        var offset = 0;
+        var arrayBuffer = this.result,
+            array = new Uint8Array(arrayBuffer);
+
+        // Unpack Version
+        var version = new Uint32Array(array.slice(offset, offset + 4))[0];
+        offset += 4;
+
+        // Unpack Map ID
+        var mapId = new Uint32Array(array.slice(offset, offset + 4))[0];
+        offset += 4;
+
+        var mapIdE = document.getElementById("mapId")
+        mapIdE.setAttribute("value", mapId);
+
+        var versionE = document.getElementById("version")
+        versionE.innerHTML = version;
+
+        // Loop to unpack postionBuffer
+        var postionBuffer = arrayBuffer.slice(offset, arrayBuffer.length);
+        var index = 0
+        for (i = 0; i < postionBuffer.byteLength; i += 12) {
+            position_json_data = {
+                "index": index++,
+                "x": null,
+                "y": null,
+                "z": null
+            };
+
+            // if (i === 0) {
+            //     console.log(postionBuffer.slice(i, i + 4))
+            // }
+
+            var x_f32 = new Float32Array(postionBuffer.slice(i, i + 4));
+            var x_f32value = x_f32[0];
+
+            var y_f32 = new Float32Array(postionBuffer.slice(i + 4, i + 8));
+            var y_f32value = y_f32[0];
+
+            var z_f32 = new Float32Array(postionBuffer.slice(i + 8, i + 12));
+            var z_f32value = z_f32[0];
+
+            addPosition(parseInt(i / 12), x_f32value, y_f32value, z_f32value);
+        }
+
     }
+    reader.readAsArrayBuffer(trail_file);
+}
+
+function addPosition(i, x, y, z) {
+
+    var li = itemToHtml(i, x, y, z);
+    dynTable.appendChild(li);
 
     document.getElementById("addRow").style.visibility = 'visible'
 
@@ -147,6 +111,26 @@ function addItems(positions_json) {
 
 };
 
+function saveAs(blob, fileName) {
+    var url = window.URL.createObjectURL(blob);
+
+    var anchorElem = document.createElement("a");
+    anchorElem.style = "display: none";
+    anchorElem.href = url;
+    anchorElem.download = fileName;
+
+    document.body.appendChild(anchorElem);
+    anchorElem.click();
+
+    document.body.removeChild(anchorElem);
+
+    // On Edge, revokeObjectURL should be called only after
+    // a.click() has completed, atleast on EdgeHTML 15.15048
+    setTimeout(function() {
+        window.URL.revokeObjectURL(url);
+    }, 1000);
+}
+
 function addRow() {
     var copyedRow = table.children[table.children.length - 1].cloneNode(true);
     console.log(copyedRow)
@@ -161,7 +145,7 @@ function addRow() {
     table.appendChild(copyedRow);
 }
 
-function itemToHtml(position) {
+function itemToHtml(i, x, y, z) {
     var tableRow0 = document.createElement("tr");
     var tableData0 = document.createElement("td");
     var tableData1 = document.createElement("td");
@@ -171,22 +155,22 @@ function itemToHtml(position) {
     var tableData5 = document.createElement("td");
 
     var posCounter = document.createElement("div");
-    posCounter.innerHTML = position.index;
+    posCounter.innerHTML = i;
     posCounter.setAttribute("class", "label");
     posCounter.setAttribute("type", "number");
 
     var posX = document.createElement("input");
-    posX.setAttribute("value", position.x);
+    posX.setAttribute("value", x);
     posX.setAttribute("class", "coord");
     posX.setAttribute("type", "number");
 
     var posY = document.createElement("input");
-    posY.setAttribute("value", position.y);
+    posY.setAttribute("value", y);
     posY.setAttribute("class", "coord");
     posY.setAttribute("type", "number");
 
     var posZ = document.createElement("input");
-    posZ.setAttribute("value", position.z);
+    posZ.setAttribute("value", z);
     posZ.setAttribute("class", "coord");
     posZ.setAttribute("type", "number");
 
@@ -230,18 +214,20 @@ function itemToHtml(position) {
 }
 
 function deleteItems() {
-    var ul = document.getElementById("table");
-    while (ul.firstChild) {
-        ul.firstChild.remove();
+    var dynTable = document.getElementById("table");
+    while (dynTable.firstChild) {
+        dynTable.firstChild.remove();
     }
 };
 
 function saveTrail() {
-    trail_json_data = {
-        "version": document.getElementById("version").innerHTML,
-        "map_id": document.getElementById("mapId").value,
-        "positions": []
-    }
+    fileBytes = []
+
+    var version = document.getElementById("version").innerHTML
+    var mapId = document.getElementById("mapId").value
+
+    fileBytes.push(Int32toBytes(version))
+    fileBytes.push(Int32toBytes(mapId))
 
     table.querySelectorAll('tr').forEach(function(row, index) {
         // Ignore the header
@@ -250,16 +236,16 @@ function saveTrail() {
             return;
         }
 
-        row_data = {
-            "index": index - 1,
-            "x": parseFloat(row.children[2].children[0].value),
-            "y": parseFloat(row.children[3].children[0].value),
-            "z": parseFloat(row.children[4].children[0].value),
-        }
-        trail_json_data.positions.push(row_data)
+        var x = parseFloat(row.children[2].children[0].value);
+        var y = parseFloat(row.children[3].children[0].value);
+        var z = parseFloat(row.children[4].children[0].value);
+
+        byte_file.push(doubleToByteArray(x), doubleToByteArray(y), doubleToByteArray(z));
     });
 
-    jsonToFile(trail_json_data)
+    var file_blob = new Blob(fileBytes)
+    var fileName = document.getElementById("newFileName").value
+    saveAs(file_blob, fileName);
 }
 
 function Int32toBytes(num) {
@@ -296,29 +282,6 @@ function saveAs(blob, fileName) {
     setTimeout(function() {
         window.URL.revokeObjectURL(url);
     }, 1000);
-}
-
-function jsonToFile(json_data) {
-    var byte_file = [];
-
-    var version = Int32toBytes(json_data.version);
-    byte_file.push(version)
-
-    // Unpack Map ID
-    var mapId = Int32toBytes(json_data.map_id);
-    byte_file.push(mapId)
-
-    // Loop to unpack postionBuffer
-    for (i = 0; i < json_data.positions.length; i++) {
-        var x = doubleToByteArray(json_data.positions[i].x);
-        var y = doubleToByteArray(json_data.positions[i].y);
-        var z = doubleToByteArray(json_data.positions[i].z);
-        byte_file.push(x, y, z);
-    }
-
-    var file_blob = new Blob(byte_file)
-    var fileName = document.getElementById("newFileName").value
-    saveAs(file_blob, fileName);
 }
 
 var table = null;

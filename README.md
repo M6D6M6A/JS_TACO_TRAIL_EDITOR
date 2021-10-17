@@ -6,6 +6,7 @@
 - Version:      	1.0.0
 - Generated:    	Oct 17, 2021
 - Last Update:    	Oct 17, 2021
+- Online Version:   https://greansilver.pythonanywhere.com/taco/trail
 - Get TacO:	        http://www.gw2taco.com/
 
 
