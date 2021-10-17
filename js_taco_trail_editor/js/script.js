@@ -2,8 +2,42 @@
 
 const inputElement = document.getElementById("file-input");
 const dynTable = document.getElementById("table");
+const mapIdE = document.getElementById("mapId");
 
 inputElement.addEventListener("change", display_trail, false);
+mapIdE.addEventListener("change", show_map_name, false);
+
+var invocation = new XMLHttpRequest();
+
+function callOtherDomain(url) {
+    if (invocation) {
+        invocation.open('GET', url, true);
+        invocation.onreadystatechange = handler;
+        invocation.send();
+    } else {
+        invocation = new XMLHttpRequest();
+    }
+}
+
+function handler() {
+    if (this.readyState == 4 && this.status == 200) {
+        var json_response = JSON.parse(this.responseText);
+        var name = json_response.name
+        mapIdE.title = name;
+    } else {
+        mapIdE.title = "Not Found!";
+    }
+
+}
+
+function show_map_name() {
+    var id = mapIdE.value;
+    var url = "https://api.guildwars2.com/v2/maps/" + id + "?lang=en"
+    if (id.length > 0) {
+        callOtherDomain(url)
+    }
+
+}
 
 function display_trail() {
     var trail_file = this.files[0];
@@ -51,8 +85,8 @@ function unpack_trail(trail_file) {
         var mapId = new Uint32Array(array.slice(offset, offset + 4))[0];
         offset += 4;
 
-        var mapIdE = document.getElementById("mapId")
         mapIdE.setAttribute("value", mapId);
+        show_map_name()
 
         var versionE = document.getElementById("version")
         versionE.innerHTML = version;
