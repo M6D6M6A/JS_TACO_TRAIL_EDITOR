@@ -1,0 +1,117 @@
+input {
+    border: 1px solid white;
+    border-bottom: 1px solid gray;
+    border-radius: 4px;
+}
+
+input:focus {
+    outline: none !important;
+    border: 1px solid gray;
+    border-radius: 4px;
+}
+
+button {
+    border: 1px solid white;
+    background-color: white;
+    border: 1px solid gray;
+    border-radius: 4px;
+}
+
+button:focus {
+    border: 1px solid gray;
+    background-color: white;
+    border-radius: 4px;
+}
+
+table {
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+table th,
+table td {
+    border: 1px solid #ccc;
+}
+
+table th,
+table td {
+    padding: 0.5rem;
+}
+
+h1 {
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: #b71c1c;
+    color: white;
+}
+
+.main {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.block {
+    border: 1px solid gray;
+    display: inline-block;
+    padding: 4px;
+    border-radius: 4px;
+    height: 40px;
+    vertical-align: middle;
+    margin-right: 15px;
+}
+
+.subBlock {
+    display: inline;
+    padding-top: auto;
+    padding-bottom: auto;
+    padding-right: 5px;
+    vertical-align: middle;
+}
+
+.shortInput {
+    width: 45px;
+}
+
+.fileInput {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.draggable {
+    cursor: move;
+    user-select: none;
+}
+
+.placeholder {
+    background-color: #edf2f7;
+    border: 2px dashed #cbd5e0;
+}
+
+.clone-list {
+    border-top: 1px solid #ccc;
+}
+
+.clone-table {
+    border-collapse: collapse;
+    border: none;
+}
+
+.clone-table th,
+.clone-table td {
+    border: 1px solid #ccc;
+    border-top: none;
+    padding: 0.5rem;
+}
+
+.dragging {
+    background: #fff;
+    border-top: 1px solid #ccc;
+    z-index: 999;
+}
