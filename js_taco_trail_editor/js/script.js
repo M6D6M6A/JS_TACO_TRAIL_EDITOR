@@ -124,7 +124,7 @@ function unpack_trail(trail_file) {
 
 function addPosition(i, x, y, z) {
 
-    var li = itemToHtml(i, x, y, z);
+    var li = positionToHtml(i, x, y, z);
     dynTable.appendChild(li);
 
     document.getElementById("addRow").style.visibility = 'visible'
@@ -179,7 +179,7 @@ function addRow() {
     table.appendChild(copyedRow);
 }
 
-function itemToHtml(i, x, y, z) {
+function positionToHtml(i, x, y, z) {
     var tableRow0 = document.createElement("tr");
     var tableData0 = document.createElement("td");
     var tableData1 = document.createElement("td");
@@ -260,8 +260,8 @@ function saveTrail() {
     var version = document.getElementById("version").innerHTML
     var mapId = document.getElementById("mapId").value
 
-    fileBytes.push(Int32toBytes(version))
-    fileBytes.push(Int32toBytes(mapId))
+    fileBytes.push(intToInt32Bytes(version))
+    fileBytes.push(intToInt32Bytes(mapId))
 
     table.querySelectorAll('tr').forEach(function(row, index) {
         // Ignore the header
@@ -274,7 +274,7 @@ function saveTrail() {
         var y = parseFloat(row.children[3].children[0].value);
         var z = parseFloat(row.children[4].children[0].value);
 
-        byte_file.push(doubleToByteArray(x), doubleToByteArray(y), doubleToByteArray(z));
+        byte_file.push(doubleToFloat32Bytes(x), doubleToFloat32Bytes(y), doubleToFloat32Bytes(z));
     });
 
     var file_blob = new Blob(fileBytes)
@@ -282,7 +282,7 @@ function saveTrail() {
     saveAs(file_blob, fileName);
 }
 
-function Int32toBytes(num) {
+function intToInt32Bytes(num) {
     var buffer = new ArrayBuffer(4); // an Int32 takes 4 bytes
     new DataView(buffer).setUint32(0, num, false); // byteOffset = 0; litteEndian = false
     var bytes = new Uint8Array(buffer).reverse();
@@ -290,7 +290,7 @@ function Int32toBytes(num) {
     return bytes;
 }
 
-function doubleToByteArray(number) {
+function doubleToFloat32Bytes(number) {
     var buffer = new ArrayBuffer(4);
     new DataView(buffer).setFloat32(0, number, false);
     var bytes = new Uint8Array(buffer).reverse(); // reverse to get little endian
