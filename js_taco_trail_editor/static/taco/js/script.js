@@ -3,6 +3,15 @@
 const inputElement = document.getElementById("file-input");
 const dynTable = document.getElementById("table");
 const mapIdE = document.getElementById("mapId");
+const mapIDContainer = document.getElementById("mapIDContainer")
+const trailVersionContainer = document.getElementById("trailVersionContainer")
+const changeAllContainer = document.getElementById("changeAllContainer")
+const saveTrailContainer = document.getElementById("saveTrailContainer")
+const changeAllX = document.getElementById("changeAllX")
+const changeAllY = document.getElementById("changeAllY")
+const changeAllZ = document.getElementById("changeAllZ")
+const changeAllValue = document.getElementById("changeAllValue")
+const mainContend = document.getElementById("mainContend")
 
 inputElement.addEventListener("change", display_trail, false);
 mapIdE.addEventListener("change", show_map_name, false);
@@ -44,7 +53,13 @@ function show_map_name() {
 
 function display_trail() {
     var trail_file = this.files[0];
-    unpack_trail(trail_file);
+    if (trail_file != null) {
+        let fileArray = trail_file.name.split(".")
+        let type = fileArray[fileArray.length - 1];
+        if (type == "trl") {
+            unpack_trail(trail_file);
+        }
+    }
 }
 
 function unpack_trail(trail_file) {
@@ -131,20 +146,24 @@ function addPosition(i, x, y, z) {
     dynTable.appendChild(li);
 
     document.getElementById("addRow").style.visibility = 'visible'
+    mapIDContainer.style.display = 'flex'
+    trailVersionContainer.style.display = 'flex'
+    changeAllContainer.style.display = 'flex'
+    saveTrailContainer.style.display = 'flex'
 
-    table = document.getElementById("table");
+    // table = document.getElementById("table");
 
-    // Query all rows
-    table.querySelectorAll('tr').forEach(function(row, index) {
-        // Ignore the header
-        // We don't want user to change the order of header
-        if (index === 0) {
-            return;
-        }
+    // // Query all rows
+    // table.querySelectorAll('tr').forEach(function(row, index) {
+    //     // Ignore the header
+    //     // We don't want user to change the order of header
+    //     if (index === 0) {
+    //         return;
+    //     }
 
-        const firstCell = row.firstElementChild;
-        firstCell.addEventListener('mousedown', mouseDownHandler);
-    });
+    //     const firstCell = row.firstElementChild;
+    //     firstCell.addEventListener('mousedown', mouseDownHandler);
+    // });
 
 };
 
@@ -169,17 +188,19 @@ function saveAs(blob, fileName) {
 }
 
 function addRow() {
-    var copyedRow = table.children[table.children.length - 1].cloneNode(true);
-    console.log(copyedRow)
+    var copyedRow = dynTable.children[dynTable.children.length - 1].cloneNode(true);
     var oldIndex = parseInt(copyedRow.children[1].children[0].innerHTML)
     copyedRow.children[1].children[0].innerHTML = oldIndex + 1
     copyedRow.children[5].children[0].onclick = function(event) {
         console.log(event);
         if (event.target.innerHTML === "delete") {
-            table.removeChild(event.target.parentNode.parentNode)
+            dynTable.removeChild(event.target.parentNode.parentNode)
         }
     }
-    table.appendChild(copyedRow);
+    dynTable.appendChild(copyedRow);
+
+    // Scroll to end of Table
+    mainContend.scrollTop = mainContend.scrollHeight;
 }
 
 function itemToHtml(i, x, y, z) {
@@ -219,7 +240,6 @@ function itemToHtml(i, x, y, z) {
     delIcon.innerHTML = "delete";
     delIcon.setAttribute("class", "material-icons");
     delIcon.onclick = function(event) {
-        console.log(event);
         if (event.target.innerHTML === "delete") {
             table.removeChild(event.target.parentNode.parentNode)
         }
@@ -321,181 +341,203 @@ function saveAs(blob, fileName) {
     }, 1000);
 }
 
-var table = null;
-let draggingEle;
-let draggingRowIndex;
-let placeholder;
-let list;
-let isDraggingStarted = false;
-
-// The current position of mouse relative to the dragging element
-let x = 0;
-let y = 0;
-
-// Swap two nodes
-const swap = function(nodeA, nodeB) {
-    const parentA = nodeA.parentNode;
-    const siblingA = nodeA.nextSibling === nodeB ? nodeA : nodeA.nextSibling;
-
-    // Move `nodeA` to before the `nodeB`
-    nodeB.parentNode.insertBefore(nodeA, nodeB);
-
-    // Move `nodeB` to before the sibling of `nodeA`
-    parentA.insertBefore(nodeB, siblingA);
-};
-
-// Check if `nodeA` is above `nodeB`
-const isAbove = function(nodeA, nodeB) {
-    // Get the bounding rectangle of nodes
-    const rectA = nodeA.getBoundingClientRect();
-    const rectB = nodeB.getBoundingClientRect();
-
-    return rectA.top + rectA.height / 2 < rectB.top + rectB.height / 2;
-};
-
-const cloneTable = function() {
-    const rect = table.getBoundingClientRect();
-    const width = parseInt(window.getComputedStyle(table).width);
-
-    list = document.createElement('div');
-    list.classList.add('clone-list');
-    list.style.position = 'absolute';
-    list.style.left = `${rect.left}px`;
-    list.style.top = `${rect.top}px`;
-    table.parentNode.insertBefore(list, table);
-
-    // Hide the original table
-    table.style.visibility = 'hidden';
-
-    table.querySelectorAll('tr').forEach(function(row) {
-        // Create a new table from given row
-        const item = document.createElement('div');
-        item.classList.add('draggable');
-
-        const newTable = document.createElement('table');
-        newTable.setAttribute('class', 'clone-table');
-        newTable.style.width = `${width}px`;
-
-        const newRow = document.createElement('tr');
-        const cells = [].slice.call(row.children);
-        cells.forEach(function(cell) {
-            const newCell = cell.cloneNode(true);
-            newCell.style.width = `${parseInt(window.getComputedStyle(cell).width)}px`;
-            newRow.appendChild(newCell);
-        });
-
-        newTable.appendChild(newRow);
-        item.appendChild(newTable);
-        list.appendChild(item);
-    });
-};
-
-const mouseDownHandler = function(e) {
-    e.preventDefault()
-        // Get the original row
-    const originalRow = e.target.parentNode.parentNode;
-    draggingRowIndex = [].slice.call(table.querySelectorAll('tr')).indexOf(originalRow);
-
-    // Determine the mouse position
-    x = e.clientX;
-    y = e.clientY;
-
-    // Attach the listeners to `document`
-    document.addEventListener('mousemove', mouseMoveHandler);
-    document.addEventListener('mouseup', mouseUpHandler);
-};
-
-const mouseMoveHandler = function(e) {
-    e.preventDefault()
-    if (!isDraggingStarted) {
-        isDraggingStarted = true;
-
-        cloneTable();
-
-        draggingEle = [].slice.call(list.children)[draggingRowIndex];
-        draggingEle.classList.add('dragging');
-
-        // Let the placeholder take the height of dragging element
-        // So the next element won't move up
-        placeholder = document.createElement('div');
-        placeholder.classList.add('placeholder');
-        draggingEle.parentNode.insertBefore(placeholder, draggingEle.nextSibling);
-        placeholder.style.height = `${draggingEle.offsetHeight}px`;
+function changeAll() {
+    if (changeAllX.checked) {
+        changeAxis("x")
     }
 
-    // Set position for dragging element
-    draggingEle.style.position = 'absolute';
-    draggingEle.style.top = `${draggingEle.offsetTop + e.clientY - y}px`;
-    draggingEle.style.left = `${draggingEle.offsetLeft + e.clientX - x}px`;
-
-    // Reassign the position of mouse
-    x = e.clientX;
-    y = e.clientY;
-
-    // The current order
-    // prevEle
-    // draggingEle
-    // placeholder
-    // nextEle
-    const prevEle = draggingEle.previousElementSibling;
-    const nextEle = placeholder.nextElementSibling;
-
-    // The dragging element is above the previous element
-    // User moves the dragging element to the top
-    // We don't allow to drop above the header
-    // (which doesn't have `previousElementSibling`)
-    if (prevEle && prevEle.previousElementSibling && isAbove(draggingEle, prevEle)) {
-        // The current order    -> The new order
-        // prevEle              -> placeholder
-        // draggingEle          -> draggingEle
-        // placeholder          -> prevEle
-        swap(placeholder, draggingEle);
-        swap(placeholder, prevEle);
-        return;
+    if (changeAllY.checked) {
+        changeAxis("y")
     }
 
-    // The dragging element is below the next element
-    // User moves the dragging element to the bottom
-    if (nextEle && isAbove(nextEle, draggingEle)) {
-        // The current order    -> The new order
-        // draggingEle          -> nextEle
-        // placeholder          -> placeholder
-        // nextEle              -> draggingEle
-        swap(nextEle, placeholder);
-        swap(nextEle, draggingEle);
+    if (changeAllZ.checked) {
+        changeAxis("z")
     }
-};
+}
 
-const mouseUpHandler = function() {
-    // Remove the placeholder
-    placeholder && placeholder.parentNode.removeChild(placeholder);
+function changeAxis(axis) {
+    let tableArray = table.children;
+    for (var i = 1; i < tableArray.length; i++) {
+        let rowAxis = tableArray[i].querySelector('#' + axis).children[0];
+        rowAxis.value = changeAllValue.value;
+    }
+}
 
-    draggingEle.classList.remove('dragging');
-    draggingEle.style.removeProperty('top');
-    draggingEle.style.removeProperty('left');
-    draggingEle.style.removeProperty('position');
+// var table = null;
+// let draggingEle;
+// let draggingRowIndex;
+// let placeholder;
+// let list;
+// let isDraggingStarted = false;
 
-    // Get the end index
-    const endRowIndex = [].slice.call(list.children).indexOf(draggingEle);
+// // The current position of mouse relative to the dragging element
+// let x = 0;
+// let y = 0;
 
-    isDraggingStarted = false;
+// // Swap two nodes
+// const swap = function(nodeA, nodeB) {
+//     const parentA = nodeA.parentNode;
+//     const siblingA = nodeA.nextSibling === nodeB ? nodeA : nodeA.nextSibling;
 
-    // Remove the `list` element
-    list.parentNode.removeChild(list);
+//     // Move `nodeA` to before the `nodeB`
+//     nodeB.parentNode.insertBefore(nodeA, nodeB);
 
-    // Move the dragged row to `endRowIndex`
-    let rows = [].slice.call(table.querySelectorAll('tr'));
-    draggingRowIndex > endRowIndex ?
-        rows[endRowIndex].parentNode.insertBefore(rows[draggingRowIndex], rows[endRowIndex]) :
-        rows[endRowIndex].parentNode.insertBefore(
-            rows[draggingRowIndex],
-            rows[endRowIndex].nextSibling
-        );
+//     // Move `nodeB` to before the sibling of `nodeA`
+//     parentA.insertBefore(nodeB, siblingA);
+// };
 
-    // Bring back the table
-    table.style.removeProperty('visibility');
+// // Check if `nodeA` is above `nodeB`
+// const isAbove = function(nodeA, nodeB) {
+//     // Get the bounding rectangle of nodes
+//     const rectA = nodeA.getBoundingClientRect();
+//     const rectB = nodeB.getBoundingClientRect();
 
-    // Remove the handlers of `mousemove` and `mouseup`
-    document.removeEventListener('mousemove', mouseMoveHandler);
-    document.removeEventListener('mouseup', mouseUpHandler);
-};
+//     return rectA.top + rectA.height / 2 < rectB.top + rectB.height / 2;
+// };
+
+// const cloneTable = function() {
+//     const rect = table.getBoundingClientRect();
+//     const width = parseInt(window.getComputedStyle(table).width);
+
+//     list = document.createElement('div');
+//     list.classList.add('clone-list');
+//     list.style.position = 'absolute';
+//     list.style.left = `${rect.left}px`;
+//     list.style.top = `${rect.top}px`;
+//     table.parentNode.insertBefore(list, table);
+
+//     // Hide the original table
+//     table.style.visibility = 'hidden';
+
+//     table.querySelectorAll('tr').forEach(function(row) {
+//         // Create a new table from given row
+//         const item = document.createElement('div');
+//         item.classList.add('draggable');
+
+//         const newTable = document.createElement('table');
+//         newTable.setAttribute('class', 'clone-table');
+//         newTable.style.width = `${width}px`;
+
+//         const newRow = document.createElement('tr');
+//         const cells = [].slice.call(row.children);
+//         cells.forEach(function(cell) {
+//             const newCell = cell.cloneNode(true);
+//             newCell.style.width = `${parseInt(window.getComputedStyle(cell).width)}px`;
+//             newRow.appendChild(newCell);
+//         });
+
+//         newTable.appendChild(newRow);
+//         item.appendChild(newTable);
+//         list.appendChild(item);
+//     });
+// };
+
+// const mouseDownHandler = function(e) {
+//     e.preventDefault()
+//         // Get the original row
+//     const originalRow = e.target.parentNode.parentNode;
+//     draggingRowIndex = [].slice.call(table.querySelectorAll('tr')).indexOf(originalRow);
+
+//     // Determine the mouse position
+//     x = e.clientX;
+//     y = e.clientY;
+
+//     // Attach the listeners to `document`
+//     document.addEventListener('mousemove', mouseMoveHandler);
+//     document.addEventListener('mouseup', mouseUpHandler);
+// };
+
+// const mouseMoveHandler = function(e) {
+//     e.preventDefault()
+//     if (!isDraggingStarted) {
+//         isDraggingStarted = true;
+
+//         cloneTable();
+
+//         draggingEle = [].slice.call(list.children)[draggingRowIndex];
+//         draggingEle.classList.add('dragging');
+
+//         // Let the placeholder take the height of dragging element
+//         // So the next element won't move up
+//         placeholder = document.createElement('div');
+//         placeholder.classList.add('placeholder');
+//         draggingEle.parentNode.insertBefore(placeholder, draggingEle.nextSibling);
+//         placeholder.style.height = `${draggingEle.offsetHeight}px`;
+//     }
+
+//     // Set position for dragging element
+//     draggingEle.style.position = 'absolute';
+//     draggingEle.style.top = `${draggingEle.offsetTop + e.clientY - y}px`;
+//     draggingEle.style.left = `${draggingEle.offsetLeft + e.clientX - x}px`;
+
+//     // Reassign the position of mouse
+//     x = e.clientX;
+//     y = e.clientY;
+
+//     // The current order
+//     // prevEle
+//     // draggingEle
+//     // placeholder
+//     // nextEle
+//     const prevEle = draggingEle.previousElementSibling;
+//     const nextEle = placeholder.nextElementSibling;
+
+//     // The dragging element is above the previous element
+//     // User moves the dragging element to the top
+//     // We don't allow to drop above the header
+//     // (which doesn't have `previousElementSibling`)
+//     if (prevEle && prevEle.previousElementSibling && isAbove(draggingEle, prevEle)) {
+//         // The current order    -> The new order
+//         // prevEle              -> placeholder
+//         // draggingEle          -> draggingEle
+//         // placeholder          -> prevEle
+//         swap(placeholder, draggingEle);
+//         swap(placeholder, prevEle);
+//         return;
+//     }
+
+//     // The dragging element is below the next element
+//     // User moves the dragging element to the bottom
+//     if (nextEle && isAbove(nextEle, draggingEle)) {
+//         // The current order    -> The new order
+//         // draggingEle          -> nextEle
+//         // placeholder          -> placeholder
+//         // nextEle              -> draggingEle
+//         swap(nextEle, placeholder);
+//         swap(nextEle, draggingEle);
+//     }
+// };
+
+// const mouseUpHandler = function() {
+//     // Remove the placeholder
+//     placeholder && placeholder.parentNode.removeChild(placeholder);
+
+//     draggingEle.classList.remove('dragging');
+//     draggingEle.style.removeProperty('top');
+//     draggingEle.style.removeProperty('left');
+//     draggingEle.style.removeProperty('position');
+
+//     // Get the end index
+//     const endRowIndex = [].slice.call(list.children).indexOf(draggingEle);
+
+//     isDraggingStarted = false;
+
+//     // Remove the `list` element
+//     list.parentNode.removeChild(list);
+
+//     // Move the dragged row to `endRowIndex`
+//     let rows = [].slice.call(table.querySelectorAll('tr'));
+//     draggingRowIndex > endRowIndex ?
+//         rows[endRowIndex].parentNode.insertBefore(rows[draggingRowIndex], rows[endRowIndex]) :
+//         rows[endRowIndex].parentNode.insertBefore(
+//             rows[draggingRowIndex],
+//             rows[endRowIndex].nextSibling
+//         );
+
+//     // Bring back the table
+//     table.style.removeProperty('visibility');
+
+//     // Remove the handlers of `mousemove` and `mouseup`
+//     document.removeEventListener('mousemove', mouseMoveHandler);
+//     document.removeEventListener('mouseup', mouseUpHandler);
+// };
