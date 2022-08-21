@@ -30,7 +30,6 @@ fileInput.addEventListener('click', async () => {
   _file = file
   fileName.innerHTML = file.name;
   _fileContent = await file.arrayBuffer();
-  console.log(_file, _fileContent);
   display_trail();
 });
 
