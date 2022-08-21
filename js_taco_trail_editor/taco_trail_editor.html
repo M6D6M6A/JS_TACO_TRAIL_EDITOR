@@ -20,13 +20,14 @@
             <div class="topBar">
                 <div class="vertical">
                     <div class="block">
-                        <input class="fileInput subBlock" type="file" id="file-input">
+                        <button class="fileInput subBlock" id="fileInput">Open</button>
+                        <div id="fileName"></div>
                     </div>
                     <div class="block" id="saveTrailContainer" style="display: none;">
                         <input type="checkbox" id="checkboxFileName" onclick="toggleFileName()">
                         <input id="newFileName" value="edited_taco_trail.trl" disabled>
-                        <button onclick="saveTrail()">Save As</button>
-                        <button onclick="saveTrail()">Download</button>
+                        <button onclick="saveAs()">Save As</button>
+                        <button onclick="download()">Download</button>
                     </div>
                 </div>
 

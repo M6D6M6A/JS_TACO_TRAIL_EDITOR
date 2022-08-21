@@ -1,6 +1,7 @@
 (function(window, document) {})(window, document);
 
-const inputElement = document.getElementById("file-input");
+const fileInput = document.getElementById("fileInput");
+const fileName = document.getElementById("fileName");
 const dynTable = document.getElementById("table");
 const mapIdE = document.getElementById("mapId");
 const mapIDContainer = document.getElementById("mapIDContainer");
@@ -16,10 +17,23 @@ const indexStart = document.getElementById("indexStart");
 const indexEnd = document.getElementById("indexEnd");
 const checkboxIndex = document.getElementById("checkboxIndex");
 const checkboxFileName = document.getElementById("checkboxFileName");
-const fileName = document.getElementById("newFileName");
+const newFileName = document.getElementById("newFileName");
 const mapIdName = document.getElementById("mapIdName");
 
-inputElement.addEventListener("change", display_trail, false);
+fileInput.addEventListener("change", display_trail, false);
+let fileHandle;
+let _file;
+let _fileContent;
+fileInput.addEventListener('click', async () => {
+  [fileHandle] = await window.showOpenFilePicker();
+  const file = await fileHandle.getFile();
+  _file = file
+  fileName.innerHTML = file.name;
+  _fileContent = await file.arrayBuffer();
+  console.log(_file, _fileContent);
+  display_trail();
+});
+
 mapIdE.addEventListener("change", show_map_name, false);
 
 var invocation = new XMLHttpRequest();
@@ -56,7 +70,7 @@ function show_map_name() {
 }
 
 function display_trail() {
-    var trail_file = this.files[0];
+    var trail_file = _file;
     if (trail_file != null) {
         let fileArray = trail_file.name.split(".");
         let type = fileArray[fileArray.length - 1];
@@ -166,13 +180,13 @@ function addPosition(i, x, y, z) {
     saveTrailContainer.style.display = 'flex'
 };
 
-function saveAs(blob, fileName) {
+function saveAs(blob, newFileName) {
     var url = window.URL.createObjectURL(blob);
 
     var anchorElem = document.createElement("a");
     anchorElem.style = "display: none";
     anchorElem.href = url;
-    anchorElem.download = fileName;
+    anchorElem.download = newFileName;
 
     document.body.appendChild(anchorElem);
     anchorElem.click();
@@ -275,7 +289,7 @@ function deleteItems() {
     }
 };
 
-function saveTrail() {
+function download() {
     fileBytes = []
 
     var version = document.getElementById("version").innerHTML
@@ -300,9 +314,47 @@ function saveTrail() {
 
     var file_blob = new Blob(fileBytes)
     if (checkboxFileName.checked) {
-        saveAs(file_blob, fileName.value);
+        saveBlobAs(file_blob, newFileName.value);
     } else {
-        saveAs(file_blob, inputElement.value.replace(/.*[\/\\]/, ''));
+        saveBlobAs(file_blob, fileName.innerHTML.replace(/.*[\/\\]/, ''));
+    }
+
+};
+
+async function saveAs() {
+    fileBytes = []
+
+    var version = document.getElementById("version").innerHTML
+    var mapId = document.getElementById("mapId").value
+
+    fileBytes.push(Int32toBytes(version))
+    fileBytes.push(Int32toBytes(mapId))
+
+    table.querySelectorAll('tr').forEach(function(row, index) {
+        // Ignore the header
+        // We don't want user to change the order of header
+        if (index === 0) {
+            return;
+        }
+
+        var x = parseFloat(row.children[2].children[0].value);
+        var y = parseFloat(row.children[3].children[0].value);
+        var z = parseFloat(row.children[4].children[0].value);
+
+        fileBytes.push(doubleToByteArray(x), doubleToByteArray(y), doubleToByteArray(z));
+    });
+
+    var file_blob = new Blob(fileBytes)
+
+    
+    if (checkboxFileName.checked) {
+        const fileHandleSave = await self.showSaveFilePicker({
+            suggestedName: newFileName.value,
+          });
+    } else {
+        const fileHandleSave = await self.showSaveFilePicker({
+            suggestedName: fileName.innerHTML.replace(/.*[\/\\]/, ''),
+          });
     }
 
 };
@@ -323,13 +375,13 @@ function doubleToByteArray(number) {
     return bytes;
 };
 
-function saveAs(blob, fileName) {
+function saveBlobAs(blob, newFileName) {
     var url = window.URL.createObjectURL(blob);
 
     var anchorElem = document.createElement("a");
     anchorElem.style = "display: none";
     anchorElem.href = url;
-    anchorElem.download = fileName;
+    anchorElem.download = newFileName;
 
     document.body.appendChild(anchorElem);
     anchorElem.click();
@@ -416,8 +468,8 @@ function changeAxis(axis, opp) {
 
 function toggleFileName() {
     if (checkboxFileName.checked) {
-        fileName.disabled = false;
+        newFileName.disabled = false;
     } else {
-        fileName.disabled = true;
+        newFileName.disabled = true;
     }
 }
