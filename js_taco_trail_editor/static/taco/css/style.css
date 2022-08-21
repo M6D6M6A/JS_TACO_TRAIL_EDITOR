@@ -6,6 +6,7 @@ body {
   margin: 0px;
   padding: 0px;
   font-family: 'Roboto', sans-serif;
+  background-color: #b71c1c;
 }
 
 input {
@@ -59,6 +60,7 @@ table td {
   display: flex;
   flex-shrink: 0;
   flex-direction: column;
+  background-color: white;
 }
 
 ::-webkit-scrollbar {
@@ -104,6 +106,7 @@ table td {
   justify-content: center;
   background-color: #b71c1c;
   align-items: center;
+  min-width: 0;
 }
 
 .botBar {
@@ -138,6 +141,9 @@ table td {
 .vertical {
   display: flex;
   flex-direction: column;
+  align-content: space-evenly
+  align-items: center;
+  justify-content: center;
 }
 
 .block {
@@ -146,8 +152,9 @@ table td {
   padding: 4px;
   margin: 4px;
   border-radius: 4px;
-  align-items: center;
+  align-items: stretch;
   background-color: white;
+  justify-content: center;
 }
 
 .subBlock {

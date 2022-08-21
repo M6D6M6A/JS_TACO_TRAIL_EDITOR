@@ -3,20 +3,21 @@
 const inputElement = document.getElementById("file-input");
 const dynTable = document.getElementById("table");
 const mapIdE = document.getElementById("mapId");
-const mapIDContainer = document.getElementById("mapIDContainer")
-const trailVersionContainer = document.getElementById("trailVersionContainer")
-const changeAllContainer = document.getElementById("changeAllContainer")
-const saveTrailContainer = document.getElementById("saveTrailContainer")
-const changeAllX = document.getElementById("changeAllX")
-const changeAllY = document.getElementById("changeAllY")
-const changeAllZ = document.getElementById("changeAllZ")
-const changeAllValue = document.getElementById("changeAllValue")
-const mainContend = document.getElementById("mainContend")
-const indexStart = document.getElementById("indexStart")
-const indexEnd = document.getElementById("indexEnd")
-const checkboxIndex = document.getElementById("checkboxIndex")
-const checkboxFileName = document.getElementById("checkboxFileName")
-const fileName = document.getElementById("newFileName")
+const mapIDContainer = document.getElementById("mapIDContainer");
+const trailVersionContainer = document.getElementById("trailVersionContainer");
+const changeAllContainer = document.getElementById("changeAllContainer");
+const saveTrailContainer = document.getElementById("saveTrailContainer");
+const changeAllX = document.getElementById("changeAllX");
+const changeAllY = document.getElementById("changeAllY");
+const changeAllZ = document.getElementById("changeAllZ");
+const changeAllValue = document.getElementById("changeAllValue");
+const mainContend = document.getElementById("mainContend");
+const indexStart = document.getElementById("indexStart");
+const indexEnd = document.getElementById("indexEnd");
+const checkboxIndex = document.getElementById("checkboxIndex");
+const checkboxFileName = document.getElementById("checkboxFileName");
+const fileName = document.getElementById("newFileName");
+const mapIdName = document.getElementById("mapIdName");
 
 inputElement.addEventListener("change", display_trail, false);
 mapIdE.addEventListener("change", show_map_name, false);
@@ -34,15 +35,12 @@ function callOtherDomain(url) {
 }
 
 function handler() {
-    if (this.status == 404) {
-        mapIdE.title = "Not Found!";
-    }
     if (this.readyState == 4 && this.status == 200) {
         var json_response = JSON.parse(this.responseText);
         var name = json_response.name
-        mapIdE.title = name;
+        mapIdName.innerHTML = "".concat("[", name, "]");
     } else {
-        mapIdE.title = "Not Found!";
+        mapIdName.innerHTML = "Not Found!";
     }
 
 }
@@ -54,6 +52,7 @@ function show_map_name() {
         callOtherDomain(url)
     }
 
+    mapIdName.innerHTML 
 }
 
 function display_trail() {
@@ -157,7 +156,6 @@ function unpack_trail(trail_file) {
 }
 
 function addPosition(i, x, y, z) {
-
     var li = itemToHtml(i, x, y, z);
     dynTable.appendChild(li);
 
