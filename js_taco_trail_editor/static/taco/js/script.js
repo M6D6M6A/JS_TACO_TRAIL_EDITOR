@@ -59,12 +59,27 @@ function show_map_name() {
 function display_trail() {
     var trail_file = this.files[0];
     if (trail_file != null) {
-        let fileArray = trail_file.name.split(".")
+        let fileArray = trail_file.name.split(".");
         let type = fileArray[fileArray.length - 1];
         if (type == "trl") {
             unpack_trail(trail_file);
         }
     }
+}
+
+function Uint8ArrayToDecimal(array) {
+    return hexToDecimal(buf2hex(array));
+}
+
+function hexToDecimal(hexStr) {
+    return parseInt(hexStr, 16);
+} 
+
+function buf2hex(buffer) { // buffer is an ArrayBuffer
+    buffer.reverse()
+    return [...new Uint8Array(buffer)]
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('').toUpperCase();
 }
 
 function unpack_trail(trail_file) {
@@ -101,11 +116,11 @@ function unpack_trail(trail_file) {
             array = new Uint8Array(arrayBuffer);
 
         // Unpack Version
-        var version = new Uint32Array(array.slice(offset, offset + 4))[0];
+        var version = Uint8ArrayToDecimal(array.slice(offset, offset + 4));
         offset += 4;
 
         // Unpack Map ID
-        var mapId = new Uint32Array(array.slice(offset, offset + 4))[0];
+        var mapId = Uint8ArrayToDecimal(array.slice(offset, offset + 4));
         offset += 4;
 
         mapIdE.setAttribute("value", mapId);
@@ -124,10 +139,6 @@ function unpack_trail(trail_file) {
                 "y": null,
                 "z": null
             };
-
-            // if (i === 0) {
-            //     console.log(postionBuffer.slice(i, i + 4))
-            // }
 
             var x_f32 = new Float32Array(postionBuffer.slice(i, i + 4));
             var x_f32value = x_f32[0];
@@ -155,21 +166,6 @@ function addPosition(i, x, y, z) {
     trailVersionContainer.style.display = 'flex'
     changeAllContainer.style.display = 'flex'
     saveTrailContainer.style.display = 'flex'
-
-    // table = document.getElementById("table");
-
-    // // Query all rows
-    // table.querySelectorAll('tr').forEach(function(row, index) {
-    //     // Ignore the header
-    //     // We don't want user to change the order of header
-    //     if (index === 0) {
-    //         return;
-    //     }
-
-    //     const firstCell = row.firstElementChild;
-    //     firstCell.addEventListener('mousedown', mouseDownHandler);
-    // });
-
 };
 
 function saveAs(blob, fileName) {
@@ -197,7 +193,6 @@ function addRow() {
     var oldIndex = parseInt(copyedRow.children[1].children[0].innerHTML)
     copyedRow.children[1].children[0].innerHTML = oldIndex + 1
     copyedRow.children[5].children[0].onclick = function(event) {
-        console.log(event);
         if (event.target.innerHTML === "delete") {
             dynTable.removeChild(event.target.parentNode.parentNode)
         }
@@ -311,7 +306,7 @@ function saveTrail() {
     } else {
         saveAs(file_blob, inputElement.value.replace(/.*[\/\\]/, ''));
     }
-    
+
 };
 
 function Int32toBytes(num) {
@@ -417,14 +412,11 @@ function changeAxis(axis, opp) {
             case "-":
                 rowAxis.value = parseFloat(rowAxis.value) - parseFloat(changeAllValue.value);
                 break;
-            default:
-                console.log("changeAxis undefined opperation");
         }
     }
 };
 
 function toggleFileName() {
-    console.log("Toggle")
     if (checkboxFileName.checked) {
         fileName.disabled = false;
     } else {
