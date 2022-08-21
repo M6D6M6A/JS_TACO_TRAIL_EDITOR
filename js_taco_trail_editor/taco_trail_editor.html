@@ -18,22 +18,35 @@
             </div>
 
             <div class="topBar">
-                <div class="block">
-                    <input class="fileInput subBlock" type="file" id="file-input">
+                <div class="vertical">
+                    <div class="block">
+                        <input class="fileInput subBlock" type="file" id="file-input">
+                    </div>
+                    <div class="block" id="saveTrailContainer" style="display: none;">
+                        <div class="subBlock">
+                            <input id="newFileName" value="edited_taco_trail.trl" disabled>
+                        </div>
+                        <div class="buttons subBlock">
+                            <input type="checkbox" id="checkboxFileName" onclick="toggleFileName()">
+                            <button onclick="saveTrail()">Save</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="block" id="mapIDContainer" style="display: none;">
-                    <div class="subBlock">
-                        Map ID:
+                <div class="vertical">
+                    <div class="block" id="mapIDContainer" style="display: none;">
+                        <div class="subBlock">
+                            Map ID:
+                        </div>
+                        <input id="mapId" class="subBlock shortInput" />
                     </div>
-                    <input id="mapId" class="subBlock shortInput" />
-                </div>
 
-                <div class="block" id="trailVersionContainer" style="display: none;">
-                    <div class="subBlock">
-                        Trail Version:
+                    <div class="block" id="trailVersionContainer" style="display: none;">
+                        <div class="subBlock">
+                            Trail Version:
+                        </div>
+                        <div id="version" class="subBlock">0</div>
                     </div>
-                    <div id="version" class="subBlock">0</div>
                 </div>
 
                 <div class="block" id="changeAllContainer" style="display: none;">
@@ -52,21 +65,32 @@
                         </div>
                     </div>
 
-                    <div class="subBlock">
-                        <input type="number" id="changeAllValue">
+                    <div class="vertical">
+                        <div class="subBlock">
+                            From:
+                            <input type="number" id="indexStart" class="shortInput">
+                            To:
+                            <input type="number" id="indexEnd" class="shortInput">
+                            <input type="checkbox" id="checkboxIndex">
+                            Index
+                        </div>
+                        <div class="subBlock">
+                            <input type="number" id="changeAllValue"> Value
+                        </div>
                     </div>
-                    <div class="buttons subBlock">
-                        <button onclick="changeAll()">Change All</button>
-                    </div>
-                </div>
 
-                <div class="block" id="saveTrailContainer" style="display: none;">
-                    <div class="subBlock">
-                        <input id="newFileName" value="edited_taco_trail.trl">
+                    <div class="vertical">
+                        <div class="buttons subBlock">
+                            <button onclick="addValues()">Add</button>
+                        </div>
+                        <div class="buttons subBlock">
+                            <button onclick="subValues()">Subtract</button>
+                        </div>
+                        <div class="buttons subBlock">
+                            <button onclick="changeValues()">Change</button>
+                        </div>
                     </div>
-                    <div class="buttons subBlock">
-                        <button onclick="saveTrail()">Save</button>
-                    </div>
+
                 </div>
             </div>
 
