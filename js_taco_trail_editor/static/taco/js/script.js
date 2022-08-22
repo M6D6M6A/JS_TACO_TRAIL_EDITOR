@@ -2,6 +2,7 @@
 
 const fileInput = document.getElementById("fileInput");
 const fileName = document.getElementById("fileName");
+const oldFileInput = document.getElementById("olfFileInput");
 const dynTable = document.getElementById("table");
 const mapIdE = document.getElementById("mapId");
 const mapIDContainer = document.getElementById("mapIDContainer");
@@ -19,23 +20,43 @@ const checkboxIndex = document.getElementById("checkboxIndex");
 const checkboxFileName = document.getElementById("checkboxFileName");
 const newFileName = document.getElementById("newFileName");
 const mapIdName = document.getElementById("mapIdName");
+const fileNameContainer = document.getElementById("fileNameContainer");
 
 fileInput.addEventListener("change", display_trail, false);
 let fileHandle;
 let _file;
-let _fileContent;
-fileInput.addEventListener('click', async () => {
-  [fileHandle] = await window.showOpenFilePicker();
-  const file = await fileHandle.getFile();
-  _file = file
-  fileName.innerHTML = file.name;
-  _fileContent = await file.arrayBuffer();
-  display_trail();
+fileInput.addEventListener('click', async() => {
+    openFilePicker()
 });
 
+oldFileInput.addEventListener("change", changeOldFilePicker, false);
 mapIdE.addEventListener("change", show_map_name, false);
 
 var invocation = new XMLHttpRequest();
+
+async function openFilePicker() {
+    try {
+        [fileHandle] = await window.showOpenFilePicker();
+        const file = await fileHandle.getFile();
+        _file = file
+        fileName.innerHTML = file.name;
+        display_trail();
+    } catch (e) {
+        if (e.name != 'AbortError') {
+            openOldFilePicker();
+        }
+    }
+}
+
+function openOldFilePicker() {
+    oldFileInput.click()
+}
+
+function changeOldFilePicker() {
+    _file = oldFileInput.files[0];
+    fileName.innerHTML = _file.name;
+    display_trail()
+}
 
 function callOtherDomain(url) {
     if (invocation) {
@@ -51,7 +72,7 @@ function handler() {
     if (this.readyState == 4 && this.status == 200) {
         var json_response = JSON.parse(this.responseText);
         var name = json_response.name
-        mapIdName.innerHTML = "".concat("[", name, "]");
+        mapIdName.innerHTML = name;
     } else {
         mapIdName.innerHTML = "Not Found!";
     }
@@ -65,10 +86,17 @@ function show_map_name() {
         callOtherDomain(url)
     }
 
-    mapIdName.innerHTML 
+    mapIdName.innerHTML
 }
 
 function display_trail() {
+    mapIDContainer.style.display = 'flex';
+    trailVersionContainer.style.display = 'flex';
+    changeAllContainer.style.display = 'flex';
+    saveTrailContainer.style.display = 'flex';
+    fileNameContainer.style.display = 'flex';
+    fileName.style.display = 'flex';
+    
     var trail_file = _file;
     if (trail_file != null) {
         let fileArray = trail_file.name.split(".");
@@ -85,7 +113,7 @@ function Uint8ArrayToDecimal(array) {
 
 function hexToDecimal(hexStr) {
     return parseInt(hexStr, 16);
-} 
+}
 
 function buf2hex(buffer) { // buffer is an ArrayBuffer
     buffer.reverse()
@@ -173,10 +201,6 @@ function addPosition(i, x, y, z) {
     dynTable.appendChild(li);
 
     document.getElementById("addRow").style.visibility = 'visible'
-    mapIDContainer.style.display = 'flex'
-    trailVersionContainer.style.display = 'flex'
-    changeAllContainer.style.display = 'flex'
-    saveTrailContainer.style.display = 'flex'
 };
 
 function saveAs(blob, newFileName) {
@@ -288,46 +312,14 @@ function deleteItems() {
     }
 };
 
-function download() {
-    fileBytes = []
+function getFileBlob() {
+    fileBytes = [];
 
-    var version = document.getElementById("version").innerHTML
-    var mapId = document.getElementById("mapId").value
+    var version = document.getElementById("version").innerHTML;
+    var mapId = document.getElementById("mapId").value;
 
-    fileBytes.push(Int32toBytes(version))
-    fileBytes.push(Int32toBytes(mapId))
-
-    table.querySelectorAll('tr').forEach(function(row, index) {
-        // Ignore the header
-        // We don't want user to change the order of header
-        if (index === 0) {
-            return;
-        }
-
-        var x = parseFloat(row.children[2].children[0].value);
-        var y = parseFloat(row.children[3].children[0].value);
-        var z = parseFloat(row.children[4].children[0].value);
-
-        fileBytes.push(doubleToByteArray(x), doubleToByteArray(y), doubleToByteArray(z));
-    });
-
-    var file_blob = new Blob(fileBytes)
-    if (checkboxFileName.checked) {
-        saveBlobAs(file_blob, newFileName.value);
-    } else {
-        saveBlobAs(file_blob, fileName.innerHTML.replace(/.*[\/\\]/, ''));
-    }
-
-};
-
-async function saveAs() {
-    fileBytes = []
-
-    var version = document.getElementById("version").innerHTML
-    var mapId = document.getElementById("mapId").value
-
-    fileBytes.push(Int32toBytes(version))
-    fileBytes.push(Int32toBytes(mapId))
+    fileBytes.push(intToBytes(version));
+    fileBytes.push(intToBytes(mapId));
 
     table.querySelectorAll('tr').forEach(function(row, index) {
         // Ignore the header
@@ -340,25 +332,39 @@ async function saveAs() {
         var y = parseFloat(row.children[3].children[0].value);
         var z = parseFloat(row.children[4].children[0].value);
 
-        fileBytes.push(doubleToByteArray(x), doubleToByteArray(y), doubleToByteArray(z));
+        fileBytes.push(floatToBytes(x), floatToBytes(y), floatToBytes(z));
     });
 
-    var file_blob = new Blob(fileBytes)
+    return new Blob(fileBytes, { type: 'application/octet-binary' });
+}
 
-    
+async function writeFile(blob) {
+    var suggestedName;
     if (checkboxFileName.checked) {
-        const fileHandleSave = await self.showSaveFilePicker({
-            suggestedName: newFileName.value,
-          });
+        suggestedName = newFileName.value
     } else {
-        const fileHandleSave = await self.showSaveFilePicker({
-            suggestedName: fileName.innerHTML.replace(/.*[\/\\]/, ''),
-          });
+        suggestedName = fileName.innerHTML.replace(/.*[\/\\]/, '')
     }
+
+    try {
+        var fileHandle = await self.showSaveFilePicker({
+            suggestedName: suggestedName,
+        });
+        const writer = await fileHandle.createWritable();
+        await writer.write(blob);
+        await writer.close();
+    } catch (e) {
+        downloadBlob(blob, suggestedName);
+    }
+};
+
+function saveAs() {
+    var fileBlob = getFileBlob();
+    writeFile(fileBlob);
 
 };
 
-function Int32toBytes(num) {
+function intToBytes(num) {
     var buffer = new ArrayBuffer(4); // an Int32 takes 4 bytes
     new DataView(buffer).setUint32(0, num, false); // byteOffset = 0; litteEndian = false
     var bytes = new Uint8Array(buffer).reverse();
@@ -366,7 +372,7 @@ function Int32toBytes(num) {
     return bytes;
 };
 
-function doubleToByteArray(number) {
+function floatToBytes(number) {
     var buffer = new ArrayBuffer(4);
     new DataView(buffer).setFloat32(0, number, false);
     var bytes = new Uint8Array(buffer).reverse(); // reverse to get little endian
@@ -374,13 +380,13 @@ function doubleToByteArray(number) {
     return bytes;
 };
 
-function saveBlobAs(blob, newFileName) {
+function downloadBlob(blob, name) {
     var url = window.URL.createObjectURL(blob);
 
     var anchorElem = document.createElement("a");
     anchorElem.style = "display: none";
     anchorElem.href = url;
-    anchorElem.download = newFileName;
+    anchorElem.download = name;
 
     document.body.appendChild(anchorElem);
     anchorElem.click();

@@ -8,8 +8,6 @@
 </head>
 
 <body>
-
-
     <div>
         <div class="mainContainer">
             <div class="gitHubLink">
@@ -18,34 +16,43 @@
             </div>
 
             <div class="topBar">
-                <div class="vertical">
-                    <div class="block">
-                        <button class="fileInput subBlock" id="fileInput">Open</button>
-                        <div id="fileName"></div>
-                    </div>
-                    <div class="block" id="saveTrailContainer" style="display: none;">
-                        <input type="checkbox" id="checkboxFileName" onclick="toggleFileName()">
-                        <input id="newFileName" value="edited_taco_trail.trl" disabled>
-                        <button onclick="saveAs()">Save As</button>
-                        <button onclick="download()">Download</button>
+                <div class="block">
+                    <div class="vertical">
+                        <div class="subBlock">
+                            <input class="fileInput subBlock" type="file" id="olfFileInput" style="display: none;">
+                            <button class="fileInput subBlock" id="fileInput">Open File</button>
+                        </div>
+                        <div class="subBlock" id="fileNameContainer" style="display: none;">
+                            <div id="fileName" style="display: none;"></div>
+                        </div>
+                        <div class="subBlock" id="saveTrailContainer" style="display: none;">
+                            <input type="checkbox" id="checkboxFileName" onclick="toggleFileName()">
+                            <input id="newFileName" value="edited_taco_trail.trl" disabled>
+                            <button onclick="saveAs()">Save</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="vertical">
                     <div class="block" id="mapIDContainer" style="display: none;">
-                        <div class="subBlock">
-                            Map ID:
+                        <div class="vertical">
+                            <div class="subBlock">
+                                <div class="subBlock">
+                                    Map ID:
+                                </div>
+                                <input id="mapId" class="subBlock shortInput" />
+                            </div>
+                            <div id="mapIdName"></div>
+                            <div class="subBlock" id="trailVersionContainer" style="display: none;">
+                                <div class="subBlock">
+                                    Trail Version:
+                                </div>
+                                <div id="version" class="subBlock">0</div>
+                            </div>
                         </div>
-                        <input id="mapId" class="subBlock shortInput" />
-                        <div id="mapIdName"></div>
                     </div>
 
-                    <div class="block" id="trailVersionContainer" style="display: none;">
-                        <div class="subBlock">
-                            Trail Version:
-                        </div>
-                        <div id="version" class="subBlock">0</div>
-                    </div>
+
                 </div>
 
                 <div class="block" id="changeAllContainer" style="display: none;">
@@ -79,9 +86,9 @@
                     </div>
 
                     <div class="vertical">
-                            <button onclick="addValues()">Add</button>
-                            <button onclick="subValues()">Subtract</button>
-                            <button onclick="changeValues()">Change</button>
+                        <button onclick="addValues()">Add</button>
+                        <button onclick="subValues()">Subtract</button>
+                        <button onclick="changeValues()">Change</button>
                     </div>
 
                 </div>
@@ -96,7 +103,7 @@
                 </div>
             </div>
 
-            <div class="botBar"> © 2022 - Philipp Reuter (GW2: FireAnomali.8207)</div>
+            <div class="botBar"> © 2022 - Philipp Reuter (Discord: Philipp#4768)</div>
         </div>
     </div>
 

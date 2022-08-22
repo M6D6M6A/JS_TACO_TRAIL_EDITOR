@@ -159,10 +159,9 @@ table td {
 
 .subBlock {
   display: flex;
-  padding-top: auto;
-  padding-bottom: auto;
-  padding-right: 5px;
-  vertical-align: middle;
+  vertical-align: center;
+  justify-content: space-evenly;
+  padding: 2px;
 }
 
 .shortInput {
